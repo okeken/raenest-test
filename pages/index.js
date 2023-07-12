@@ -1,11 +1,57 @@
 import Head from 'next/head'
-import Image from 'next/image'
+
 import { Inter } from 'next/font/google'
-import styles from '@/styles/Home.module.css'
+import { useState, useEffect } from 'react'
 
-const inter = Inter({ subsets: ['latin'] })
 
+const API_URL="https://api.exchangerate-api.com/v4/latest/"
+const userBalance =[
+  {currency:"GBP", balance:2000},
+  {currency:"UR", balance:3500},
+  {currency:"NGN", balance:200000},
+  ]
+  
+  const prevData = userBalance[2]
 export default function Home() {
+  const [bal, setBal]= useState(prevData)
+  const [fromInput, setFromInput] = useState(0)
+  const [outputInput, setOutInput] = useState(0)
+  const [showOptions, setShowOptions] = useState(false)
+
+  const [prevCurr, setPrevCurr]=useState({
+  prev:prevData.currency,
+  curr:null
+  })
+  const [showOptionsOut, setShowOptionsOut] = useState(false)
+  const handleChange=(e)=>{
+    setFromInput(e.target.value)
+  }
+  const handleSwitch=(val, walletType)=>{
+    setPrevCurr(()=>({
+      prev:"",
+      // curr:""
+    }))
+    if(walletType==="from"){      
+          setBal(val)
+          setShowOptions(state =>!state)
+          return;
+    }
+
+    setShowOptionsOut(state =>!state)
+
+  }
+ const currentCurr =bal.currency
+  useEffect(()=>{
+    if(fromInput===0){
+      return;
+    }
+  const fetchData = async()=>{    const result = await fetch(`${API_URL}${currentCurr}`).then(info=>info.json())
+    console.log(result, "reslt")
+
+  }
+
+  fetchData()
+  },[currentCurr, fromInput])
   return (
     <>
       <Head>
@@ -14,100 +60,90 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={`${styles.main} ${inter.className}`}>
-        <div className={styles.description}>
-          <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>pages/index.js</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
+      <main >
+       
+       <div className="exchange-comp flex">
+        <div className="">
+       <h1 className="title">
+    Convert from one to another Currency
+        </h1>   
+    <div className="input-card from-div">
+    <div className='flex align-items-center justify-between wallet-section'>
+      <div className="currency-options">
+        <div className="flex" onClick={()=>setShowOptions(state=>!state)}>
+          {bal.currency} Wallet
+        <div className="angle-down">
+          {">"}
+        </div>
         </div>
 
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
+       {
+        showOptions &&   <div>
+        <ul className="currency-list">
+          {
+            userBalance.map((bal, index)=>{
+              return   <li onClick={()=>handleSwitch(bal, "from")} className={`${index===0 ? "first-li":""}`} key={bal.currency}>
+                {bal.currency}
+              </li>
+            })
+          }
+        </ul>
+      </div>
+       }
+  
+      </div>
+      <div>
+        <div className="user-bal">Balance</div>
+        {bal.balance}
+      </div>
+    </div>
+    <div>
+      <input value={fromInput} name="from" onClick={handleChange} className='w-100 input-el' />
+    </div>
+    </div>
+
+    <div className="input-card output-div">
+    <div className='flex align-items-center justify-between wallet-section'>
+      <div className="currency-options">
+        <div className="flex" onClick={()=>setShowOptions(state=>!state)}>
+          Convert to
+        <div className="angle-down">
+          {">"}
+        </div>
         </div>
 
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
+       {
+        showOptionsOut &&   <div>
+        <ul className="currency-list">
+          {
+            userBalance.map((bal, index)=>{
+              return   <li onClick={()=>handleSwitch(bal,"output")} className={`${index===0 ? "first-li":""}`} key={bal.currency}>
+                {bal.currency}
+              </li>
+            })
+          }
+        </ul>
+      </div>
+       }
+  
+      </div>
+      <div>
+        <div className="user-bal">Balance</div>      
+        0
+      </div>
+    </div>
+    <div>
+      <input disabled value={outputInput} name="from"  className='w-100 input-el' />
+    </div>
+    </div>
 
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
+          
+       
 
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
         </div>
+        <div className="preview">Preview</div>
+       </div>
+    
       </main>
     </>
   )
